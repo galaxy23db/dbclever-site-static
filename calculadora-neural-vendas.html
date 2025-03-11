@@ -149,15 +149,13 @@
 
             // Resultado formatado
             let result = `
-                <h3>Resultado:</h3>
+                <h3>Dados:</h3>
                 <p><strong>Modelo:</strong> ${models_name[model]}</p>
                 <p><strong>Plano Base:</strong> ${plan} (R$${planPrice} por ${planCredits} créditos)</p>
                 <p><strong>Quantidade de Mensagens:</strong> ${totalMessages}</p>
                 <p><strong>Total de Tokens:</strong> ${totalTokens.toFixed(2)}M (baseado em ${TOKENS_PER_MESSAGE} tokens por mensagem)</p>
-                <p><strong>Custo de Input (75%):</strong> $${inputCost.toFixed(2)}</p>
-                <p><strong>Custo de Output (25%):</strong> $${outputCost.toFixed(2)}</p>
-                <p><strong>Custo Total:</strong> $${totalCost.toFixed(2)}</p>
-                <p><strong>Custo com Cache:</strong> $${totalCachedCost.toFixed(2)}</p>
+                
+                <h4>Resultado</h4>
                 <p><strong>Créditos Restantes:</strong> ${remainingCredits.toFixed(2)}</p>
                 <p class="recommendation"><strong>Créditos Recomendados:</strong> ${totalRecommendedCredits} créditos</p>
             `;
