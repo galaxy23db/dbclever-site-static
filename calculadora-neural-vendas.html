@@ -74,8 +74,8 @@
     </div>
 
     <div class="input-group">
-        <label for="tokens">Tokens por mês (em milhões):</label>
-        <input type="number" id="tokens" step="0.01" min="0.01" required>
+        <label for="messages">Quantidade de Mensagens por Mês:</label>
+        <input type="number" id="messages" min="1" required>
     </div>
 
     <button onclick="calculate()">Calcular</button>
@@ -110,21 +110,24 @@
         const models_name = {
             "gpt-4o": "Avançado",
             "gpt-4o-mini": "Básico"
-        }
+        };
+
+        const TOKENS_PER_MESSAGE = 4500; // Média entre 3k e 6k tokens por mensagem
 
         function calculate() {
             const model = document.getElementById('model').value;
             const plan = document.getElementById('plan').value;
-            const tokensInput = document.getElementById('tokens').value;
+            const messages = document.getElementById('messages').value;
             
-            if (!tokensInput || tokensInput <= 0) {
-                document.getElementById('result').innerHTML = '<p class="warning">Por favor, insira um valor válido de tokens (maior que 0)</p>';
+            if (!messages || messages <= 0) {
+                document.getElementById('result').innerHTML = '<p class="warning">Por favor, insira uma quantidade válida de mensagens (maior que 0)</p>';
                 return;
             }
 
-            const tokens = parseFloat(tokensInput);
-            const inputTokens = tokens * 0.75; // 75% input
-            const outputTokens = tokens * 0.25; // 25% output
+            const totalMessages = parseInt(messages);
+            const totalTokens = (totalMessages * TOKENS_PER_MESSAGE) / 1000000; // Convertendo para milhões de tokens
+            const inputTokens = totalTokens * 0.75; // 75% input
+            const outputTokens = totalTokens * 0.25; // 25% output
 
             // Cálculo dos custos em dólares
             const modelCosts = costs[model];
@@ -149,7 +152,8 @@
                 <h3>Resultado:</h3>
                 <p><strong>Modelo:</strong> ${models_name[model]}</p>
                 <p><strong>Plano Base:</strong> ${plan} (R$${planPrice} por ${planCredits} créditos)</p>
-                <p><strong>Total de tokens:</strong> ${tokens.toFixed(2)}M</p>
+                <p><strong>Quantidade de Mensagens:</strong> ${totalMessages}</p>
+                <p><strong>Total de Tokens:</strong> ${totalTokens.toFixed(2)}M (baseado em ${TOKENS_PER_MESSAGE} tokens por mensagem)</p>
                 <p><strong>Custo de Input (75%):</strong> $${inputCost.toFixed(2)}</p>
                 <p><strong>Custo de Output (25%):</strong> $${outputCost.toFixed(2)}</p>
                 <p><strong>Custo Total:</strong> $${totalCost.toFixed(2)}</p>
