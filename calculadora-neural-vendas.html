@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora de Custos Neural Vendas</title>
+    <title>Neural Vendas - Calculadora de Custos</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 600px;
+            max-width: 700px;
             margin: 20px auto;
             padding: 20px;
         }
@@ -17,42 +17,65 @@
         label {
             display: block;
             margin-bottom: 5px;
+            font-weight: bold;
         }
         select, input {
             width: 100%;
             padding: 8px;
             margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
         }
         #result {
             margin-top: 20px;
             padding: 15px;
             border: 1px solid #ccc;
             border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .warning {
+            color: #d32f2f;
+            font-weight: bold;
+        }
+        .recommendation {
+            color: #1976d2;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
-    <h1>Calculadora de Custos Neural Vendas</h1>
+    <h1>Neural Vendas - Calculadora de Custos</h1>
     
     <div class="input-group">
         <label for="model">Modelo:</label>
         <select id="model">
-            <option value="gpt-4o">GPT-4o</option>
-            <option value="gpt-4o-mini">GPT-4o-mini</option>
+            <option value="gpt-4o">Avançado</option>
+            <option value="gpt-4o-mini">Básico</option>
         </select>
     </div>
 
     <div class="input-group">
-        <label for="plan">Plano:</label>
+        <label for="plan">Plano Base:</label>
         <select id="plan">
-            <option value="essentials">Essentials (8 créditos - $249)</option>
-            <option value="standard">Standard (24 créditos - $498)</option>
+            <option value="essentials">Essentials (8 créditos - R$249)</option>
+            <option value="standard">Standard (24 créditos - R$498)</option>
         </select>
     </div>
 
     <div class="input-group">
         <label for="tokens">Tokens por mês (em milhões):</label>
-        <input type="number" id="tokens" step="0.1" min="0">
+        <input type="number" id="tokens" step="0.01" min="0.01" required>
     </div>
 
     <button onclick="calculate()">Calcular</button>
@@ -62,69 +85,88 @@
     <script>
         const costs = {
             'gpt-4o': {
-                input: 2.50,
-                cached: 1.25,
-                output: 10.00
+                input: 2.50,    // $ por 1M tokens
+                cached: 1.25,   // $ por 1M tokens
+                output: 10.00   // $ por 1M tokens
             },
             'gpt-4o-mini': {
-                input: 0.150,
-                cached: 0.075,
-                output: 0.600
+                input: 0.150,   // $ por 1M tokens
+                cached: 0.075,  // $ por 1M tokens
+                output: 0.600   // $ por 1M tokens
             }
         };
 
         const plans = {
             'essentials': {
                 credits: 8,
-                price: 249
+                price: 249  // R$
             },
             'standard': {
                 credits: 24,
-                price: 498
+                price: 498  // R$
             }
         };
+
+        const models_name = {
+            "gpt-4o": "Avançado",
+            "gpt-4o-mini": "Básico"
+        }
 
         function calculate() {
             const model = document.getElementById('model').value;
             const plan = document.getElementById('plan').value;
-            const tokens = parseFloat(document.getElementById('tokens').value);
-
-            if (!tokens || tokens <= 0) {
-                document.getElementById('result').innerHTML = 'Por favor, insira um valor válido de tokens';
+            const tokensInput = document.getElementById('tokens').value;
+            
+            if (!tokensInput || tokensInput <= 0) {
+                document.getElementById('result').innerHTML = '<p class="warning">Por favor, insira um valor válido de tokens (maior que 0)</p>';
                 return;
             }
 
-            // Assumindo uma distribuição típica de 75% input e 25% output
-            const inputTokens = tokens * 0.75;
-            const outputTokens = tokens * 0.25;
+            const tokens = parseFloat(tokensInput);
+            const inputTokens = tokens * 0.75; // 75% input
+            const outputTokens = tokens * 0.25; // 25% output
 
-            // Cálculo dos custos
+            // Cálculo dos custos em dólares
             const modelCosts = costs[model];
             const inputCost = inputTokens * modelCosts.input;
-            const cachedCost = inputTokens * modelCosts.cached;  // Assumindo mesmo volume para cached
+            const cachedCost = inputTokens * modelCosts.cached;
             const outputCost = outputTokens * modelCosts.output;
-            const totalCost = inputCost + outputCost;  // Custo sem cache
-            
-            // Créditos do plano
-            const planCredits = plans[plan].credits;
-            const planPrice = plans[plan].price;
-            const remainingCredits = planCredits - totalCost;
+            const totalCost = inputCost + outputCost; // em $
+            const totalCachedCost = cachedCost + outputCost; // em $
 
-            // Resultado
+            // Créditos do plano (1 crédito = $1)
+            const planCredits = plans[plan].credits;
+            const planPrice = plans[plan].price; // em R$
+            const remainingCredits = planCredits - totalCost; // em créditos ($)
+
+            // Estimativa de créditos necessários
+            const additionalCreditsNeeded = remainingCredits < 0 ? Math.ceil(Math.abs(remainingCredits)) : 0;
+            const totalRecommendedCredits = Math.ceil(totalCost);
+            const additionalCost = additionalCreditsNeeded > 0 ? (additionalCreditsNeeded * (planPrice / planCredits)) : 0; // Convertendo para R$
+
+            // Resultado formatado
             let result = `
                 <h3>Resultado:</h3>
-                <p>Modelo: ${model}</p>
-                <p>Plano: ${plan} ($${planPrice} por ${planCredits} créditos)</p>
-                <p>Total de tokens: ${tokens}M</p>
-                <p>Custo de Input (75%): $${inputCost.toFixed(2)}</p>
-                <p>Custo de Output (25%): $${outputCost.toFixed(2)}</p>
-                <p>Custo Total: $${totalCost.toFixed(2)}</p>
-                <p>Custo com Cache: $${(cachedCost + outputCost).toFixed(2)}</p>
-                <p>Créditos Restantes: ${remainingCredits.toFixed(2)}</p>
+                <p><strong>Modelo:</strong> ${models_name[model]}</p>
+                <p><strong>Plano Base:</strong> ${plan} (R$${planPrice} por ${planCredits} créditos)</p>
+                <p><strong>Total de tokens:</strong> ${tokens.toFixed(2)}M</p>
+                <p><strong>Custo de Input (75%):</strong> $${inputCost.toFixed(2)}</p>
+                <p><strong>Custo de Output (25%):</strong> $${outputCost.toFixed(2)}</p>
+                <p><strong>Custo Total:</strong> $${totalCost.toFixed(2)}</p>
+                <p><strong>Custo com Cache:</strong> $${totalCachedCost.toFixed(2)}</p>
+                <p><strong>Créditos Restantes:</strong> ${remainingCredits.toFixed(2)}</p>
+                <p class="recommendation"><strong>Créditos Recomendados:</strong> ${totalRecommendedCredits} créditos</p>
             `;
 
             if (remainingCredits < 0) {
-                result += `<p style="color: red">Atenção: Você precisará de $${Math.abs(remainingCredits).toFixed(2)} adicionais</p>`;
+                result += `
+                    <p class="warning">Atenção: O plano base não é suficiente!</p>
+                    <p><strong>Créditos adicionais necessários:</strong> ${additionalCreditsNeeded} créditos</p>
+                    <p><strong>Custo adicional estimado:</strong> R$${additionalCost.toFixed(2)}</p>
+                    <p><strong>Custo total estimado:</strong> R$${(planPrice + additionalCost).toFixed(2)}</p>
+                `;
+            } else {
+                result += `<p><strong>Status:</strong> O plano ${plan} é suficiente para suas necessidades</p>`;
             }
 
             document.getElementById('result').innerHTML = result;
