@@ -59,20 +59,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Video placeholder click handler
-    const videoPlaceholder = document.querySelector('.video-placeholder');
-    
-    if (videoPlaceholder) {
-        videoPlaceholder.addEventListener('click', function() {
-            // Replace with actual video embed code
-            this.innerHTML = `
-                <iframe width="100%" height="350" src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1" 
-                frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                allowfullscreen></iframe>
-            `;
-        });
-    }
-    
     // Animate elements on scroll
     const animateOnScroll = function() {
         const elements = document.querySelectorAll('.feature-card, .step, .integration-card, .pricing-card, .testimonial-card');
